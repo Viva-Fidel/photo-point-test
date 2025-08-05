@@ -1,0 +1,37 @@
+services:
+  backend:
+    container_name: django
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: bash -c "python manage.py collectstatic --no-input && python manage.py makemigrations && python manage.py migrate && gunicorn -c gunicorn_config.py photo_point.wsgi:application"
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+
+  postgres:
+    container_name: postgres
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: photo_point_db
+      POSTGRES_USER: photo_point_admin
+      POSTGRES_PASSWORD: photo_point_password
+    ports:
+      - "5432:5432"
+    
+  celery:
+    container_name: celery
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A photo_point worker --loglevel=info
+    depends_on:
+      - backend
+      - redis
+
+  redis:
+    container_name: redis
+    image: redis:latest
+    ports:
+      - "6379:6379"
