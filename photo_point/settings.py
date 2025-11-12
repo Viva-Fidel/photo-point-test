@@ -13,9 +13,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 from pathlib import Path
 
-from dotenv import load_dotenv
+from decouple import config
 
-load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = config("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -86,11 +85,11 @@ WSGI_APPLICATION = "photo_point.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("DB_NAME"),
-        "USER": os.getenv("DB_USER"),
-        "PASSWORD": os.getenv("DB_PASSWORD"),
-        "HOST": os.getenv("DB_HOST"),
-        "PORT": os.getenv("DB_PORT"),
+        "NAME": config("DB_NAME"),
+        "USER": config("DB_USER"),
+        "PASSWORD": config("DB_PASSWORD"),
+        "HOST": config("DB_HOST"),
+        "PORT": config("DB_PORT"),
     }
 }
 
@@ -149,19 +148,35 @@ AUTH_USER_MODEL = "users.CustomUser"
 
 # Email data
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = os.getenv("EMAIL_HOST")
+EMAIL_HOST = config("EMAIL_HOST")
 EMAIL_USE_TLS = False
 EMAIL_PORT = 465
 EMAIL_USE_SSL = True
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
 
 # SMS
-SMSAERO_EMAIL = os.getenv("SMSAERO_EMAIL")
-SMSAERO_API_KEY = os.getenv("SMSAERO_API_KEY")
+SMSAERO_EMAIL = config("SMSAERO_EMAIL")
+SMSAERO_API_KEY = config("SMSAERO_API_KEY")
 
 # Telegram
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+TELEGRAM_BOT_TOKEN = config("TELEGRAM_BOT_TOKEN")
 
 # Celery
 CELERY_TIMEZONE = "Europe/Moscow"
 CELERY_BROKER_URL = "redis://redis:6379/0"
+
+# Notifications
+NOTIFY_CHANNELS = {
+    "email": {
+        "enabled": config("NOTIFY_EMAIL_ENABLED", cast=bool, default=True),
+        "priority": config("NOTIFY_EMAIL_PRIORITY", cast=int, default=1),
+    },
+    "sms": {
+        "enabled": config("NOTIFY_SMS_ENABLED", cast=bool, default=False),
+        "priority": config("NOTIFY_SMS_PRIORITY", cast=int, default=5),
+    },
+    "telegram": {
+        "enabled": config("NOTIFY_TELEGRAM_ENABLED", cast=bool, default=True),
+        "priority": config("NOTIFY_TELEGRAM_PRIORITY", cast=int, default=10),
+    },
+}
